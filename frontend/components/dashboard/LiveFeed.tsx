@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { tweetsData, Tweet } from '../../data/tweets';
 import { XLogo } from '../Icons';
