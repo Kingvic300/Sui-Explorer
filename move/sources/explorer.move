@@ -36,14 +36,14 @@ public struct Project has key, store {
 	tagline: String,
 	products: Table<address, Product>,
 }
-
+#[allow(unused_field)]
 public struct Product has key, store {
 	id: UID,
 	name: String,
 	description: String,
 	packages: Table<address, Package>,	
 }
-
+#[allow(unused_field)]
 public struct Package has key, store {
 	id: UID,
 	name: String,
@@ -95,8 +95,8 @@ fun init(otw:EXPLORER, ctx: &mut TxContext){
 
 public fun createRequest(
 		name: String,
-		image: Url,
-		banner: Url,
+		image: String,
+		banner: String,
 		category_num: u8,
 		description: String,
 		tagline: String,
@@ -114,7 +114,7 @@ public fun createRequest(
 		Category::NFT
 	} else { Category::DeFi };
 
-	CreateRequest { name, image, banner, category, description, tagline }
+	CreateRequest { name, image: url::new_unsafe(image.to_ascii()), banner: url::new_unsafe(banner.to_ascii()), category, description, tagline }
 }
 
 public fun create_project(request: CreateRequest, registery: &mut ProjectRegistery, ctx: &mut TxContext) {
@@ -140,3 +140,52 @@ public fun add_product_to_project(project: &mut Project, product: Product, ctx: 
 }
 
 
+#[test_only]
+use sui::test_scenario as ts;
+
+#[test_only]
+use sui::display::Display;
+
+#[test_only]
+public(package) fun share_registery_for_testing(ctx: &mut TxContext){
+	transfer::share_object(ProjectRegistery{ id: object::new(ctx), projects: table::new<address, Project>(ctx) })
+}
+
+#[test_only]
+public(package) fun get_name(self: &Project): &String {
+	&self.name
+}
+
+#[test_only]
+public(package) fun projects_borrow_mut(self: &mut ProjectRegistery): &mut Table<address, Project> {
+	&mut self.projects
+}
+
+#[test_only]
+public(package) fun destroy_project(project: Project){
+	let Project { id, products, .. } = project;
+	products.destroy_empty();
+	id.delete();
+}
+
+#[test_only]
+const Admin: address = @0xBAB434;
+
+#[test_only]
+fun init_for_testing(ctx: &mut TxContext){
+	init(EXPLORER(), ctx)
+}
+
+#[test]
+fun test_init(){
+	let mut scenario = ts::begin(Admin);
+	{
+		init_for_testing(scenario.ctx());
+	};
+	
+	scenario.next_tx(Admin);
+	assert!(scenario.has_most_recent_for_sender<Publisher>(), 1);
+	assert!(ts::has_most_recent_shared<ProjectRegistery>(), 1);	
+	assert!(scenario.has_most_recent_for_sender<Display<Project>>(), 1);	
+	scenario.end();
+}
