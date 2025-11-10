@@ -1,6 +1,6 @@
 import { projectsData } from '../data/projects';
 import { newsData } from '../data/news';
-import { Project, NewsArticle } from '../types/index';
+import { Project, NewsArticle } from '@/types/index.ts';
 
 // Simulate network delay
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
