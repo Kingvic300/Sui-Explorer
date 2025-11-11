@@ -1,36 +1,41 @@
+// services/walletService.ts
+import { useConnectModal, useCurrentAccount, useDisconnectWallet } from '@mysten/dapp-kit';
 
-/**
- * A mock wallet address generator.
- */
-const generateSuiAddress = (): string =>
-  `0x${[...Array(64)]
-    .map(() => Math.floor(Math.random() * 16).toString(16))
-    .join('')}`;
+export const walletService = {
+    async connect(): Promise<string> {
+        const { openConnectModal } = useConnectModal.getState();
 
-/**
- * WalletService class to encapsulate wallet connection logic.
- * This provides a mock implementation for now, preparing for future SDK integration.
- */
-class WalletService {
-  /**
-   * Simulates connecting to a wallet.
-   * @returns A promise that resolves with a mock wallet address.
-   */
-  public async connect(): Promise<string> {
-    // Simulate wallet connection popup and user approval delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const account = generateSuiAddress();
-    return account;
-  }
+        return new Promise((resolve, reject) => {
+            if (openConnectModal) {
+                // Open the wallet connection modal
+                openConnectModal();
 
-  /**
-   * Simulates disconnecting from a wallet.
-   */
-  public disconnect(): void {
-    // In a real scenario, this would call the SDK's disconnect method.
-    console.log('Wallet disconnected via service.');
-  }
-}
+                // You might want to set up an event listener or polling
+                // to detect when the wallet is actually connected
+                // This is a simplified version - you may need more complex logic
+                const checkConnection = setInterval(() => {
+                    const currentAccount = useCurrentAccount.getState();
+                    if (currentAccount) {
+                        clearInterval(checkConnection);
+                        resolve(currentAccount.address);
+                    }
+                }, 500);
 
-// Export a singleton instance of the service
-export const walletService = new WalletService();
+                // Timeout after 30 seconds
+                setTimeout(() => {
+                    clearInterval(checkConnection);
+                    reject(new Error('Connection timeout'));
+                }, 30000);
+            } else {
+                reject(new Error('Connect modal not available'));
+            }
+        });
+    },
+
+    disconnect(): void {
+        const { mutate: disconnect } = useDisconnectWallet.getState();
+        if (disconnect) {
+            disconnect();
+        }
+    },
+};

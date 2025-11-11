@@ -1,7 +1,7 @@
+// components/ConnectWalletPlaceholder.tsx
 import React from 'react';
 import Card from '../ui/Card';
-import Button from '../ui/Button';
-import { useWalletStore } from '../../stores/useWalletStore';
+import { ConnectButton } from '@mysten/dapp-kit';
 import { WalletIcon } from '../icons/MiscIcons';
 
 interface ConnectWalletPlaceholderProps {
@@ -11,8 +11,6 @@ interface ConnectWalletPlaceholderProps {
 }
 
 const ConnectWalletPlaceholder: React.FC<ConnectWalletPlaceholderProps> = ({ icon, title, description }) => {
-    const { connectWallet } = useWalletStore();
-
     return (
         <Card variant="dashed" className="p-6">
             <h2 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-200 mb-6">
@@ -25,9 +23,10 @@ const ConnectWalletPlaceholder: React.FC<ConnectWalletPlaceholderProps> = ({ ico
                 </div>
                 <h3 className="font-semibold text-slate-800 dark:text-slate-200 mt-4">Connect Your Wallet</h3>
                 <p className="text-sm text-slate-800 dark:text-slate-300 mt-1">{description}</p>
-                <Button variant="primary" className="!py-2 !px-5 mt-4" onClick={connectWallet}>
-                    Connect Wallet
-                </Button>
+
+                <div className="mt-4 flex justify-center">
+                    <ConnectButton />
+                </div>
             </div>
         </Card>
     );

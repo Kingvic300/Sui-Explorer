@@ -1,29 +1,22 @@
-
+// stores/useWalletStore.ts
 import { create } from 'zustand';
-import { walletService } from '../services/walletService';
 
 interface WalletState {
-  isConnected: boolean;
-  account: string | null;
-  connectWallet: () => Promise<void>;
-  disconnectWallet: () => void;
+    isConnected: boolean;
+    account: string | null;
+    connectWallet: () => void;
+    disconnectWallet: () => void;
 }
 
 export const useWalletStore = create<WalletState>((set) => ({
-  isConnected: false,
-  account: null,
-  connectWallet: async () => {
-    try {
-      const account = await walletService.connect();
-      set({ isConnected: true, account });
-    } catch (error) {
-      console.error("Failed to connect wallet:", error);
-      // Optionally handle connection errors (e.g., user rejection)
-      set({ isConnected: false, account: null });
-    }
-  },
-  disconnectWallet: () => {
-    walletService.disconnect();
-    set({ isConnected: false, account: null });
-  },
+    isConnected: false,
+    account: null,
+    connectWallet: () => {
+        // This will be implemented in components using hooks
+        console.log('Connect wallet triggered');
+    },
+    disconnectWallet: () => {
+        // This will be implemented in components using hooks
+        console.log('Disconnect wallet triggered');
+    },
 }));
