@@ -2,9 +2,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchProjects, fetchProjectById } from '../../api';
 import { useToastStore } from '../../stores/useToastStore';
+import { Project } from '../../types';
 
 export const useProjects = () => {
-    return useQuery({
+    return useQuery<Project[]>({
         queryKey: ['projects'],
         queryFn: fetchProjects,
         onError: (error) => {

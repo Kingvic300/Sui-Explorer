@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { CheckCircleIcon, XIcon, AlertTriangleIcon } from '../../icons/MiscIcons';
@@ -12,22 +11,24 @@ export interface ScamReportData {
 }
 
 interface SubmitScamModalProps {
-  onClose: () => void;
-  onSubmit: (report: ScamReportData) => Promise<void>;
+    onClose: () => void;
+    onSubmit: (report: ScamReportData) => Promise<void>;
 }
 
 const SuccessScreen = () => (
     <div className="flex flex-col items-center justify-center text-center p-8 h-full">
-         <div className="relative w-24 h-24 mb-6">
+        <div className="relative w-20 h-20 mb-4">
             <div className="absolute inset-0 bg-green-500/20 rounded-full animate-pulse"></div>
-            <div className="relative w-full h-full bg-dark-card rounded-full flex items-center justify-center border-2 border-green-500/50">
-                 <svg className="w-12 h-12 text-green-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path className="success-checkmark-icon" d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <div className="relative w-full h-full bg-white dark:bg-gray-800 rounded-full flex items-center justify-center border-2 border-green-500/50 shadow-lg">
+                <svg className="w-10 h-10 text-green-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
             </div>
         </div>
-        <h3 className="font-display text-2xl font-bold text-white">Report Received</h3>
-        <p className="text-slate-300 mt-2">Thank you for helping keep the Sui ecosystem safe. Our team will review your report shortly.</p>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Report Received</h3>
+        <p className="text-gray-600 dark:text-gray-300 text-sm">
+            Thank you for helping keep the Sui ecosystem safe. Our team will review your report shortly.
+        </p>
     </div>
 );
 
@@ -37,6 +38,92 @@ const modalContentVariants = {
     exit: { opacity: 0, y: -20, transition: { duration: 0.2, ease: 'easeIn' } }
 };
 
+// Custom form components with proper styling
+const CustomFormInput: React.FC<{
+    label: string;
+    id: string;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    type?: string;
+    placeholder?: string;
+    required?: boolean;
+    error?: string;
+    maxLength?: number;
+}> = ({ label, id, value, onChange, type = 'text', placeholder, required, error, maxLength }) => (
+    <div className="mb-4">
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            {label}
+            {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+        <input
+            type={type}
+            id={id}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            required={required}
+            maxLength={maxLength}
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200 ${
+                error
+                    ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-200 placeholder-red-300'
+                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
+            }`}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${id}-error` : undefined}
+        />
+        {error && (
+            <p id={`${id}-error`} className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
+        )}
+        {maxLength && (
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {value.length}/{maxLength} characters
+            </p>
+        )}
+    </div>
+);
+
+const CustomFormTextarea: React.FC<{
+    label: string;
+    id: string;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    placeholder?: string;
+    required?: boolean;
+    error?: string;
+    rows?: number;
+    maxLength?: number;
+}> = ({ label, id, value, onChange, placeholder, required, error, rows = 3, maxLength }) => (
+    <div className="mb-4">
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            {label}
+            {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+        <textarea
+            id={id}
+            rows={rows}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            required={required}
+            maxLength={maxLength}
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200 resize-none ${
+                error
+                    ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-200 placeholder-red-300'
+                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
+            }`}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${id}-error` : undefined}
+        />
+        {error && (
+            <p id={`${id}-error`} className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
+        )}
+        {maxLength && (
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {value.length}/{maxLength} characters
+            </p>
+        )}
+    </div>
+);
 
 const SubmitScamModal: React.FC<SubmitScamModalProps> = ({ onClose, onSubmit }) => {
     const [isClosing, setIsClosing] = useState(false);
@@ -66,8 +153,8 @@ const SubmitScamModal: React.FC<SubmitScamModalProps> = ({ onClose, onSubmit }) 
         document.addEventListener('keydown', handleKeyDown);
 
         return () => {
-          document.body.style.overflow = 'auto';
-          document.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'auto';
+            document.removeEventListener('keydown', handleKeyDown);
         };
     }, [handleClose]);
 
@@ -82,7 +169,7 @@ const SubmitScamModal: React.FC<SubmitScamModalProps> = ({ onClose, onSubmit }) 
     const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData(prev => ({ ...prev, type: e.target.value as 'Account' | 'Coin' }));
     };
-    
+
     const validateForm = (): boolean => {
         const newErrors: { [key: string]: string } = {};
         if (!formData.address.trim()) newErrors.address = 'Address or Coin Type is required.';
@@ -107,9 +194,6 @@ const SubmitScamModal: React.FC<SubmitScamModalProps> = ({ onClose, onSubmit }) 
         setErrors({});
 
         try {
-            // This is the placeholder for your backend API call.
-            // A scam report should likely go to a centralized service for review, not a smart contract.
-            // e.g., await fetch('/api/report-scam', { method: 'POST', body: JSON.stringify(formData) });
             console.log("Submitting scam report to backend API:", formData);
             await onSubmit(formData);
 
@@ -122,69 +206,181 @@ const SubmitScamModal: React.FC<SubmitScamModalProps> = ({ onClose, onSubmit }) 
             setIsSubmitting(false);
         }
     };
-    
-    const submitButtonClasses = `relative font-semibold py-3 px-5 rounded-lg transition-all duration-300 transform text-white overflow-hidden focus:outline-none flex items-center justify-center w-48 h-12 ${isSubmitting ? 'bg-red-800 cursor-wait' : 'bg-gradient-to-r from-red-600 to-orange-500 hover:brightness-110 hover:shadow-lg hover:shadow-red-500/30 active:scale-95 focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-bg focus:ring-red-400'}`;
 
-  return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300 ${isClosing ? 'opacity-0' : 'opacity-100'}`}>
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleClose}></div>
-      <form onSubmit={handleFormSubmit} ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="modal-title" className={`modal-gradient-bg relative bg-dark-bg w-full max-w-lg max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl shadow-red-500/10 flex flex-col transition-transform duration-300 ${isClosing ? 'scale-95' : 'scale-100'}`}>
-         <AnimatePresence mode="wait">
-            {isSuccess ? (
-                <m.div key="success" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex items-center justify-center">
-                    <SuccessScreen />
-                </m.div>
-            ) : (
-                <m.div 
-                    key="form" 
-                    variants={modalContentVariants}
-                    initial="hidden" 
-                    animate="visible" 
-                    exit="exit" 
-                    className="flex flex-col min-h-0 h-full"
-                >
-                    <div className="p-6 border-b border-dark-border flex-shrink-0">
-                      <h2 id="modal-title" className="font-display text-2xl font-bold text-white">Report Scam</h2>
-                      <p className="text-slate-300 mt-1">Help protect the community by reporting suspicious activity.</p>
-                      <button type="button" onClick={handleClose} aria-label="Close form" className="absolute top-6 right-6 p-2 bg-black/50 rounded-full text-white hover:bg-black/80 transition-colors disabled:opacity-50" disabled={isSubmitting}>
-                        <XIcon className="w-5 h-5" />
-                      </button>
-                    </div>
-                    
-                    <div className="flex-1 overflow-y-auto p-6">
-                        <FormSection title="Report Details" icon={<AlertTriangleIcon className="w-6 h-6 text-red-400" />}>
-                            <div className="flex gap-4">
-                                <label className="flex items-center gap-2 text-white font-semibold cursor-pointer">
-                                    <input type="radio" name="type" value="Account" checked={formData.type === 'Account'} onChange={handleRadioChange} className="form-radio bg-dark-bg border-dark-border text-accent-blue focus:ring-accent-blue" />
-                                    Account
-                                </label>
-                                 <label className="flex items-center gap-2 text-white font-semibold cursor-pointer">
-                                    <input type="radio" name="type" value="Coin" checked={formData.type === 'Coin'} onChange={handleRadioChange} className="form-radio bg-dark-bg border-dark-border text-accent-blue focus:ring-accent-blue" />
-                                    Coin
-                                </label>
+    return (
+        <div className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300 ${isClosing ? 'opacity-0' : 'opacity-100'}`}>
+            <div className="absolute inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm" onClick={handleClose}></div>
+            <form
+                onSubmit={handleFormSubmit}
+                ref={modalRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="modal-title"
+                className={`relative bg-white dark:bg-gray-900 w-full max-w-lg max-h-[90vh] rounded-xl overflow-hidden shadow-2xl flex flex-col transition-transform duration-300 ${isClosing ? 'scale-95' : 'scale-100'}`}
+            >
+                <AnimatePresence mode="wait">
+                    {isSuccess ? (
+                        <m.div
+                            key="success"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex-1 flex items-center justify-center"
+                        >
+                            <SuccessScreen />
+                        </m.div>
+                    ) : (
+                        <m.div
+                            key="form"
+                            variants={modalContentVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                            className="flex flex-col min-h-0 h-full"
+                        >
+                            {/* Header */}
+                            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h2 id="modal-title" className="text-xl font-bold text-gray-900 dark:text-white">
+                                            Report Scam
+                                        </h2>
+                                        <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
+                                            Help protect the community by reporting suspicious activity.
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleClose}
+                                        aria-label="Close form"
+                                        className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                                        disabled={isSubmitting}
+                                    >
+                                        <XIcon className="w-5 h-5" />
+                                    </button>
+                                </div>
                             </div>
-                            <FormInput label={`${formData.type} Address / Type *`} id="address" value={formData.address} onChange={handleInputChange} error={errors.address} placeholder={formData.type === 'Account' ? '0x...' : '0x2::sui::SUI'} />
-                            <FormTextarea label="Reason for Report *" id="reason" value={formData.reason} onChange={handleInputChange} error={errors.reason} placeholder="e.g., Phishing link in bio, impersonation, rug pull..." rows={4} />
-                            <FormInput label="URL with Evidence (Optional)" id="evidenceUrl" type="url" value={formData.evidenceUrl} onChange={handleInputChange} error={errors.evidenceUrl} placeholder="e.g., Link to X post, website..." />
-                        </FormSection>
-                        {errors.form && <p className="mt-4 text-sm text-red-400 text-center">{errors.form}</p>}
-                    </div>
 
-                    <div className="flex-shrink-0 p-6 border-t border-dark-border flex justify-end items-center bg-dark-bg/80">
-                        <button type="submit" disabled={isSubmitting || isSuccess} className={submitButtonClasses}>
-                            {isSubmitting && <span className="absolute top-0 -left-full w-full h-full bg-white/10 blur-sm -skew-x-12 animate-shimmer" />}
-                            <span className="relative z-10 flex items-center justify-center w-full h-full">
-                                {isSubmitting ? <span className="flex items-center gap-2"><svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" className="opacity-75"></path></svg>Submitting...</span>
-                                               : 'Submit Report'}
-                            </span>
-                        </button>
-                    </div>
-                </m.div>
-            )}
-        </AnimatePresence>
-      </form>
-    </div>
-  );
+                            {/* Content */}
+                            <div className="flex-1 overflow-y-auto p-6">
+                                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                        <AlertTriangleIcon className="w-5 h-5 text-red-500" />
+                                        Report Details
+                                    </h3>
+
+                                    {/* Radio Buttons */}
+                                    <div className="mb-6">
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                            Report Type
+                                        </label>
+                                        <div className="flex gap-6">
+                                            <label className="flex items-center gap-2 text-gray-900 dark:text-white cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    name="type"
+                                                    value="Account"
+                                                    checked={formData.type === 'Account'}
+                                                    onChange={handleRadioChange}
+                                                    className="w-4 h-4 text-red-500 border-gray-300 focus:ring-red-500 focus:ring-2"
+                                                />
+                                                Account
+                                            </label>
+                                            <label className="flex items-center gap-2 text-gray-900 dark:text-white cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    name="type"
+                                                    value="Coin"
+                                                    checked={formData.type === 'Coin'}
+                                                    onChange={handleRadioChange}
+                                                    className="w-4 h-4 text-red-500 border-gray-300 focus:ring-red-500 focus:ring-2"
+                                                />
+                                                Coin
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <CustomFormInput
+                                        label={`${formData.type} Address / Type`}
+                                        id="address"
+                                        value={formData.address}
+                                        onChange={handleInputChange}
+                                        error={errors.address}
+                                        placeholder={formData.type === 'Account' ? '0x...' : '0x2::sui::SUI'}
+                                        required
+                                    />
+                                    <CustomFormTextarea
+                                        label="Reason for Report"
+                                        id="reason"
+                                        value={formData.reason}
+                                        onChange={handleInputChange}
+                                        error={errors.reason}
+                                        placeholder="e.g., Phishing link in bio, impersonation, rug pull..."
+                                        rows={4}
+                                        required
+                                    />
+                                    <CustomFormInput
+                                        label="URL with Evidence (Optional)"
+                                        id="evidenceUrl"
+                                        type="url"
+                                        value={formData.evidenceUrl}
+                                        onChange={handleInputChange}
+                                        error={errors.evidenceUrl}
+                                        placeholder="e.g., Link to X post, website..."
+                                    />
+                                </div>
+
+                                {errors.form && (
+                                    <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                                        <p className="text-sm text-red-600 dark:text-red-400 text-center">
+                                            {errors.form}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Footer */}
+                            <div className="flex-shrink-0 p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end items-center bg-white dark:bg-gray-900">
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting || isSuccess}
+                                    className="px-6 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center gap-2"
+                                >
+                                    {isSubmitting ? (
+                                        <>
+                                            <svg
+                                                className="animate-spin h-4 w-4 text-white"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <circle
+                                                    cx="12"
+                                                    cy="12"
+                                                    r="10"
+                                                    stroke="currentColor"
+                                                    strokeWidth="4"
+                                                    className="opacity-25"
+                                                ></circle>
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                    className="opacity-75"
+                                                ></path>
+                                            </svg>
+                                            Submitting...
+                                        </>
+                                    ) : (
+                                        'Submit Report'
+                                    )}
+                                </button>
+                            </div>
+                        </m.div>
+                    )}
+                </AnimatePresence>
+            </form>
+        </div>
+    );
 };
 
 export default SubmitScamModal;

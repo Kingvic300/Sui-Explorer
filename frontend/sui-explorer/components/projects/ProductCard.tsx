@@ -4,7 +4,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
-import { EnrichedProduct } from '../../types/index';
+import { EnrichedProduct } from '@/types/index.ts';
 import LazyImage from '../ui/LazyImage';
 
 interface ProductCardProps {

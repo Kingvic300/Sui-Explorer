@@ -3,8 +3,8 @@ import { m } from 'framer-motion';
 import Card from '../ui/Card';
 import ProjectProductListItem from './ProjectProductListItem';
 // FIX: Corrected import path for Product type.
-import { Product } from '../../types/index';
-import { itemVariants } from '../../utils/animations';
+import { Product } from '@/types/index.ts';
+import { itemVariants } from '@/utils/animations';
 
 interface ProjectProductsCardProps {
   products: Product[];
