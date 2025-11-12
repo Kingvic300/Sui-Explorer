@@ -1,14 +1,11 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { fetchNews } from '../../api';
+import { NewsArticle } from '@/types/index';
 
 export const useNews = () => {
-    return useQuery({
+    return useQuery<NewsArticle[]>({
         queryKey: ['news'],
         queryFn: fetchNews,
-        onError: (error) => {
-            console.error("Error fetching news:", error);
-            // Error is handled inline on the NewsPage component
-        }
+        // Remove the onError property - handle errors in your components instead
     });
 };

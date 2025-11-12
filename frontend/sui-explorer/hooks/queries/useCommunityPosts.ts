@@ -11,7 +11,7 @@ const fetchPostsFromSmartContract = async (): Promise<Post[]> => {
     // e.g., const result = await suiClient.queryObjects({ ... });
     // and then parse the result into the Post format.
     await new Promise(res => setTimeout(res, 1000)); // simulate network delay
-    return communityPostsData; 
+    return communityPostsData;
 };
 
 

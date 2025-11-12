@@ -1,7 +1,7 @@
 
 import React from 'react';
 // FIX: Corrected import path for Update type.
-import { Update } from '../../types/index';
+import { Update } from '@/types/index.ts';
 import Card from '../ui/Card';
 import LazyImage from '../ui/LazyImage';
 

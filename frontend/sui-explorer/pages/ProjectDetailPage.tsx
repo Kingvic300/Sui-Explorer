@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { m } from 'framer-motion';
@@ -11,7 +9,7 @@ import Card from '../components/ui/Card';
 import Breadcrumb from '../components/projects/Breadcrumb';
 import ErrorState from '../components/ui/ErrorState';
 import LazyImage from '../components/ui/LazyImage';
-import { Project } from '../types/index';
+import { Project } from '@/types/index.ts';
 import { TwitterIcon, DiscordIcon, GitHubIcon, GlobeIcon, StarIcon } from '../components/icons/MiscIcons';
 import ProjectProductsCard from '../components/projects/ProjectProductsCard';
 import UpdateCard from '../components/projects/UpdateCard';
@@ -19,56 +17,101 @@ import Magnetic from '../components/ui/Magnetic';
 import { useProjectInteractionStore } from '../stores/useProjectInteractionStore';
 import ProjectReviewsSection from '../components/projects/ProjectReviewsSection';
 
-const ExpandableContent: React.FC<{ content: string }> = ({ content }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
-    const paragraphs = content.split('\n').filter(p => p.trim() !== '');
-
+// Add type guard functions
+const isProject = (data: unknown): data is Project => {
     return (
-        <div>
-            <div className={`space-y-4 text-slate-900 dark:text-slate-200 leading-relaxed ${!isExpanded ? 'max-h-48 overflow-hidden relative' : ''}`}>
-                {paragraphs.map((p, index) => <p key={index}>{p}</p>)}
-                {!isExpanded && <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-light-bg dark:from-dark-bg to-transparent" />}
-            </div>
-            <div className="text-center mt-4">
-                <Button variant="secondary" onClick={() => setIsExpanded(!isExpanded)}>
-                    {isExpanded ? 'Show less' : 'Show more'}
-                </Button>
-            </div>
-        </div>
+        typeof data === 'object' &&
+        data !== null &&
+        'id' in data &&
+        'name' in data &&
+        'tagline' in data &&
+        'description' in data &&
+        'category' in data &&
+        'logo' in data &&
+        'url' in data
     );
 };
 
-const RelatedProjectCard: React.FC<{ project: Project }> = ({ project }) => (
-    <Link to={`/projects/${project.id}`} className="block h-full group">
-        <Card className="h-full !p-4">
-            <div className="flex items-start gap-3">
-                <LazyImage
-                    src={project.logo}
-                    alt={`${project.name} logo`}
-                    wrapperClassName="w-12 h-12 rounded-lg bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border flex-shrink-0"
-                    className="w-full h-full object-contain"
-                />
-                <div className="min-w-0">
-                    <h4 className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-accent-blue transition-colors">{project.name}</h4>
-                    <p className="text-sm text-slate-800 dark:text-slate-300 line-clamp-2 mt-1">{project.tagline}</p>
-                </div>
-            </div>
-            <div className="mt-3 pt-3 border-t border-light-border dark:border-dark-border flex flex-wrap gap-1.5">
-                {(project.tags || []).slice(0, 2).map(tag => (
-                    <span key={tag} className="px-2 py-0.5 rounded-full text-xs bg-slate-100 dark:bg-dark-border text-slate-800 dark:text-slate-300 font-medium">
-                        {tag}
-                    </span>
-                ))}
+const isProjectArray = (data: unknown): data is Project[] => {
+    return Array.isArray(data) && data.every(isProject);
+};
+
+// ExpandableContent Component
+interface ExpandableContentProps {
+    content: string;
+    maxLength?: number;
+}
+
+const ExpandableContent: React.FC<ExpandableContentProps> = ({
+                                                                 content,
+                                                                 maxLength = 500
+                                                             }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const needsTruncation = content.length > maxLength;
+    const displayContent = isExpanded || !needsTruncation
+        ? content
+        : `${content.slice(0, maxLength)}...`;
+
+    return (
+        <Card className="p-6">
+            <div className="prose dark:prose-invert max-w-none">
+                <p className="whitespace-pre-line">{displayContent}</p>
+                {needsTruncation && (
+                    <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="mt-4 text-accent-blue hover:text-accent-blue/80 font-medium transition-colors"
+                    >
+                        {isExpanded ? 'Show Less' : 'Read More'}
+                    </button>
+                )}
             </div>
         </Card>
-    </Link>
-);
+    );
+};
 
+// RelatedProjectCard Component
+interface RelatedProjectCardProps {
+    project: Project;
+}
+
+const RelatedProjectCard: React.FC<RelatedProjectCardProps> = ({ project }) => {
+    return (
+        <Card className="p-5 hover:shadow-lg transition-shadow duration-300 group">
+            <Link to={`/projects/${project.id}`} className="block">
+                <div className="flex items-start gap-4">
+                    <LazyImage
+                        src={project.logo}
+                        alt={`${project.name} logo`}
+                        wrapperClassName="w-12 h-12 rounded-xl bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border p-1 flex-shrink-0 group-hover:scale-105 transition-transform"
+                        className="w-full h-full object-contain"
+                    />
+                    <div className="flex-grow min-w-0">
+                        <h3 className="font-semibold text-slate-900 dark:text-white truncate group-hover:text-accent-blue transition-colors">
+                            {project.name}
+                        </h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">
+                            {project.tagline || project.description}
+                        </p>
+                        <div className="flex items-center justify-between mt-3">
+                            <span className="text-xs font-medium text-accent-blue uppercase tracking-wide">
+                                {project.category}
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-slate-500">
+                                View →
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </Link>
+        </Card>
+    );
+};
 
 const ProjectDetailPage: React.FC = () => {
     const { projectId } = useParams<{ projectId: string }>();
     const numericProjectId = projectId ? parseInt(projectId, 10) : null;
-    
+
     const { data: project, isLoading, isError, refetch } = useProject(numericProjectId);
     const { data: allProjects = [] } = useProjects();
     const { addRecentlyViewed, isFavorite, toggleFavorite } = useProjectInteractionStore();
@@ -79,10 +122,17 @@ const ProjectDetailPage: React.FC = () => {
         }
     }, [numericProjectId, addRecentlyViewed]);
 
+    // Use type guards to safely access properties
     const relatedProjects = useMemo(() => {
-        if (!project || !project.relatedProjectIds) return [];
-        return allProjects.filter(p => project.relatedProjectIds?.includes(p.id));
+        if (!project || !isProject(project)) return [];
+        const relatedIds = project.relatedProjectIds || [];
+
+        if (!isProjectArray(allProjects)) return [];
+        return allProjects.filter(p => relatedIds.includes(p.id));
     }, [project, allProjects]);
+
+    // Create a safe project variable that's verified to be a Project
+    const safeProject = isProject(project) ? project : null;
 
     if (isLoading) {
         return <ProjectDetailSkeleton />;
@@ -90,15 +140,15 @@ const ProjectDetailPage: React.FC = () => {
 
     if (isError) {
         return (
-             <ErrorState 
+            <ErrorState
                 title="Could not load project"
                 message="There was an issue fetching the project details. It may have been moved or the network is busy."
                 onRetry={refetch}
             />
         );
     }
-    
-    if (!project) {
+
+    if (!safeProject) {
         return (
             <div className="text-center py-20">
                 <h1 className="text-3xl font-bold">Project Not Found</h1>
@@ -111,10 +161,10 @@ const ProjectDetailPage: React.FC = () => {
     }
 
     const socialLinks = [
-        { href: project.url, icon: GlobeIcon, name: 'Website' },
-        { href: project.twitter, icon: TwitterIcon, name: 'Twitter' },
-        { href: project.discord, icon: DiscordIcon, name: 'Discord' },
-        { href: project.github, icon: GitHubIcon, name: 'GitHub' },
+        { href: safeProject.url, icon: GlobeIcon, name: 'Website' },
+        { href: safeProject.twitter, icon: TwitterIcon, name: 'Twitter' },
+        { href: safeProject.discord, icon: DiscordIcon, name: 'Discord' },
+        { href: safeProject.github, icon: GitHubIcon, name: 'GitHub' },
     ].filter(link => link.href);
 
     return (
@@ -133,87 +183,94 @@ const ProjectDetailPage: React.FC = () => {
                 className="space-y-10"
             >
                 <m.div variants={itemVariants}>
-                    <Breadcrumb project={project} />
+                    <Breadcrumb project={safeProject} />
                 </m.div>
 
                 <m.header variants={itemVariants} className="flex flex-col items-center">
                     <div className="w-full flex flex-col sm:flex-row items-start sm:items-center gap-6">
-                        <LazyImage 
-                            src={project.logo} 
-                            alt={`${project.name} logo`}
+                        <LazyImage
+                            src={safeProject.logo}
+                            alt={`${safeProject.name} logo`}
                             wrapperClassName="w-24 h-24 rounded-2xl bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border p-2 flex-shrink-0"
                             className="w-full h-full object-contain"
                         />
                         <div className="flex-grow">
-                            <span className="text-sm font-bold uppercase text-accent-blue tracking-widest">{project.category}</span>
-                            <h1 className="text-4xl md:text-5xl font-display font-bold text-slate-900 dark:text-white mt-1">{project.name}</h1>
+                            <span className="text-sm font-bold uppercase text-accent-blue tracking-widest">{safeProject.category}</span>
+                            <h1 className="text-4xl md:text-5xl font-display font-bold text-slate-900 dark:text-white mt-1">{safeProject.name}</h1>
                         </div>
                         <div className="flex items-center gap-2 self-start sm:self-center mt-4 sm:mt-0">
                             <Button
-                                variant={isFavorite(project.id) ? 'secondary' : 'outline'}
+                                variant={isFavorite(safeProject.id) ? 'secondary' : 'outline'}
                                 className="!py-2.5"
-                                onClick={() => toggleFavorite(project.id)}
+                                onClick={() => toggleFavorite(safeProject.id)}
                             >
-                                <StarIcon className={`w-4 h-4 mr-2 transition-colors ${isFavorite(project.id) ? 'text-yellow-400 fill-yellow-400' : ''}`} />
-                                {isFavorite(project.id) ? 'Favorited' : 'Favorite'}
+                                <StarIcon className={`w-4 h-4 mr-2 transition-colors ${isFavorite(safeProject.id) ? 'text-yellow-400 fill-yellow-400' : ''}`} />
+                                {isFavorite(safeProject.id) ? 'Favorited' : 'Favorite'}
                             </Button>
-                            <a href={project.url} target="_blank" rel="noopener noreferrer">
+                            <a href={safeProject.url} target="_blank" rel="noopener noreferrer">
                                 <Button variant="primary" className="w-full sm:w-auto !py-2.5">Visit Website</Button>
                             </a>
                         </div>
                     </div>
-                    {project.products && project.products.length > 0 && (
+                    {safeProject.products && safeProject.products.length > 0 && (
                         <div className="mt-4">
-                             <Button variant="secondary" onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}>
+                            <Button variant="secondary" onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}>
                                 View Packages
                             </Button>
                         </div>
                     )}
-                    <p className="text-center text-slate-900 dark:text-slate-200 mt-6 max-w-2xl">{project.description}</p>
+                    <p className="text-center text-slate-900 dark:text-slate-200 mt-6 max-w-2xl">{safeProject.description}</p>
                     <div className="flex items-center space-x-3 mt-6">
-                         {socialLinks.map(link => link.href && (
-                          <Magnetic key={link.name}>
-                            <a href={link.href} target="_blank" rel="noopener noreferrer" title={link.name} className="p-2.5 rounded-full text-slate-800 dark:text-slate-300 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border hover:text-accent-blue dark:hover:border-accent-blue transition-colors">
-                              <link.icon className="w-5 h-5" />
-                            </a>
-                          </Magnetic>
+                        {socialLinks.map(link => link.href && (
+                            <Magnetic key={link.name}>
+                                <a
+                                    href={link.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title={link.name}
+                                    className="p-2.5 flex items-center justify-center rounded-full text-slate-800 dark:text-slate-300 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border hover:text-accent-blue dark:hover:border-accent-blue transition-colors"
+                                    style={{ overflow: 'visible' }}
+                                >
+                                    <link.icon className="w-5 h-5" />
+                                </a>
+                            </Magnetic>
                         ))}
                     </div>
                 </m.header>
 
                 <m.section variants={itemVariants}>
-                    <ExpandableContent content={project.longDescription || project.description} />
+                    <ExpandableContent content={safeProject.longDescription || safeProject.description} />
                 </m.section>
 
                 <m.section variants={itemVariants} id="reviews">
-                    <ProjectReviewsSection reviews={project.reviews} projectName={project.name} projectId={project.id} />
+                    <ProjectReviewsSection reviews={safeProject.reviews} projectName={safeProject.name} projectId={safeProject.id} />
                 </m.section>
-                
-                {project.products && project.products.length > 0 && (
-                     <m.section variants={itemVariants} id="products">
-                        <ProjectProductsCard products={project.products} projectId={project.id} />
+
+                {safeProject.products && safeProject.products.length > 0 && (
+                    <m.section variants={itemVariants} id="products">
+                        <ProjectProductsCard products={safeProject.products} projectId={safeProject.id} />
                     </m.section>
                 )}
 
-                {project.updates && project.updates.length > 0 && (
+                {safeProject.updates && safeProject.updates.length > 0 && (
                     <m.section variants={itemVariants} className="space-y-6">
-                         <h2 className="text-3xl font-display font-bold text-center">Updates</h2>
-                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            {project.updates.map(update => (
+                        <h2 className="text-3xl font-display font-bold text-center">Updates</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            {safeProject.updates.map(update => (
                                 <UpdateCard key={update.id} update={update} />
                             ))}
-                         </div>
+                        </div>
                     </m.section>
                 )}
-                
+
                 {relatedProjects.length > 0 && (
                     <m.section variants={itemVariants} className="space-y-6">
-                         <h2 className="text-3xl font-display font-bold text-center">Projects Related to {project.name}</h2>
-                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <h2 className="text-3xl font-display font-bold text-center">Projects Related to {safeProject.name}</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             {relatedProjects.map(p => (
                                 <RelatedProjectCard key={p.id} project={p} />
                             ))}
-                         </div>
+                        </div>
                     </m.section>
                 )}
 

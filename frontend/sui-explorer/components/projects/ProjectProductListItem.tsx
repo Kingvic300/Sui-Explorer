@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { m } from 'framer-motion';
 import LazyImage from '../ui/LazyImage';
 // FIX: Corrected import path for Product type.
-import { Product } from '../../types/index';
+import { Product } from '@/types/index.ts';
 import { ChevronRightIcon } from '../icons/MiscIcons';
 
 interface ProjectProductListItemProps {

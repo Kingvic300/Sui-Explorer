@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Project, Product } from '../../types/index';
+import { Project, Product } from '@/types/index.ts';
 import { ChevronRightIcon } from '../icons/MiscIcons';
 
 interface BreadcrumbProps {
